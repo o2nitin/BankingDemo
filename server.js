@@ -55,7 +55,8 @@ app.post('/setup', function(req, res) {
         name: name, 
         accountnumber : acc,
 		ammount: 1000,
-		transaction:[]
+		transaction:[],
+		beneficiary:[]
     }
 	 Account.addAccount(account,function (err, ac) {
         
@@ -260,6 +261,71 @@ app.post('/transfer', function(req, res) {
 
 		
 	})
+});
+
+app.post('/addbeneficiary', function(req, res) {
+	
+
+	User.findById(req.decoded.id,function(err, user){
+		if(err){
+			res.send("Some error occured Please try after some time"+ err);
+		}
+		Account.findById(user.account,function(err, acc){
+	
+			if(acc.beneficiary.indexOf(req.body.account) > -1){
+				console.log("h0000------00000h")
+				res.json({message:"Payee Already added"});
+			}
+			
+			Account.getAccountByAccNumber(req.body.account, function(err, payeeAcc){
+
+
+				if(!payeeAcc){
+					res.json({message:"Account not found"});
+
+				}
+				else{
+					if(acc.beneficiary.indexOf(payeeAcc.accountnumber) > -1){
+						console.log("h0000------00000h")
+						res.json({message:"Payee Already added"});
+					}
+					
+					else{
+
+						updateData = {
+							beneficiary : acc.beneficiary.push(payeeAcc._id)
+						}
+
+						console.log(acc.beneficiary.indexOf(payeeAcc._id));
+						console.log(acc.beneficiary);
+						console.log(payeeAcc.accountnumber);
+						console.log(updateData);
+						Account.updateAccount(acc.accountnumber, updateData, function(err, updateRes){
+	
+							var resAccot = {
+								name: acc.name,
+								ammont : acc.ammont,
+								beneficiary: acc.beneficiary
+							}
+							res.json(resAccot);
+						})
+					}
+					
+				}
+				
+				
+			})
+			
+			
+		})
+
+		
+	})
+
+});
+
+app.get('/calculateintrest', function(req, res) {
+	res.send('Hello! The API is at http://localhost:' + port + '/api');
 });
 // basic route (http://localhost:8080)
 app.get('/', function(req, res) {

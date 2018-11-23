@@ -36,7 +36,8 @@ module.exports.addAccount = function (acc, callback) {
        name : acc.name,
        accountnumber : acc.accountnumber,
        ammount : acc.ammount,
-       transaction: acc.transaction
+       transaction: acc.transaction,
+       beneficiary: acc.beneficiary
        
     }
     Account.create(add, callback);

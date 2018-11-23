@@ -213,44 +213,54 @@ app.post('/transfer', function(req, res) {
 			}
 			else{
 				Account.getAccountByAccNumber(toAccount,function(err, toAcc){
-					toAcc.ammount = toAcc.ammount + ammontToTransfer;
-
-					var t1 = {
-						ammount: ammontToTransfer,
-						type:"Credit",
-						mode:"Online transfer fro acc "+fromacc.accountnumber
+					if(err){
+						res.send("Invalid Account");
 					}
-					Transaction.addTransaction(t1,function(err, t1res){
-						toAcc.transaction.push(t1res._id);
+					if(!toAcc){
+						res.send("Invalid Account number.");
+					}
+					else{
+						toAcc.ammount = toAcc.ammount + ammontToTransfer;
 
-						Account.updateAccount(toAcc.accountnumber, toAcc, function(err, returndata){
-							if(err){
-								res.send(err);
-							}
-							var t2 = {
-								ammount: ammontToTransfer,
-								type:"Debit",
-								mode:"Online transfer to acc "+toAcc.accountnumber
-							}
-							fromacc.ammount = fromacc.ammount - ammontToTransfer;
-							Transaction.addTransaction(t2,function(err, t2res){
-								console.log(t2res._id)
-								fromacc.transaction.push(t2res._id);
-								Account.update({accountnumber:fromacc.accountnumber}, 
-									{ ammount: fromacc.ammount,
-										transaction: fromacc.transaction
-								    }, function(err, returndata2){
-									if(err){
-										res.send(err);
-									}
-									res.json({message:"Transfer done. Your current acc balance INR :"+ fromacc.ammount
-							
-								});
+						var t1 = {
+							ammount: ammontToTransfer,
+							type:"Credit",
+							mode:"Online transfer fro acc "+fromacc.accountnumber
+						}
+						Transaction.addTransaction(t1,function(err, t1res){
+							toAcc.transaction.push(t1res._id);
+	
+							Account.updateAccount(toAcc.accountnumber, toAcc, function(err, returndata){
+								if(err){
+									res.send(err);
+								}
+								var t2 = {
+									ammount: ammontToTransfer,
+									type:"Debit",
+									mode:"Online transfer to acc "+toAcc.accountnumber
+								}
+								fromacc.ammount = fromacc.ammount - ammontToTransfer;
+								Transaction.addTransaction(t2,function(err, t2res){
+									console.log(t2res._id)
+									fromacc.transaction.push(t2res._id);
+									Account.update({accountnumber:fromacc.accountnumber}, 
+										{ ammount: fromacc.ammount,
+											transaction: fromacc.transaction
+										}, function(err, returndata2){
+										if(err){
+											res.send(err);
+										}
+										res.json({message:"Transfer done. Your current acc balance INR :"+ fromacc.ammount
+								
+									});
+									})
 								})
-							})
-							
-						} )
-					})
+								
+							} )
+						})
+
+					}
+				
 					
 				
 				})

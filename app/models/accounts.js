@@ -12,8 +12,13 @@ var accountSchema = mongoose.Schema({
         type:Number
     },
     ammount:{
-        type:String
+        type:Number
     },
+
+    transaction:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+    
+    beneficiary:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }],
+    
     createdAt:{
         type:Date,
         default: Date.now
@@ -51,10 +56,10 @@ module.exports.getAccountByAccNumber = function (accNumber, callback) {
 
 
 //find and update account
-module.exports.updateAccount = function (accNumber, acc, options, callback) {
+module.exports.updateAccount = function (accNumber, acc,  callback) {
     var query = {accountnumber: accNumber};
    
-    Account.findOneAndUpdate(query, acc, options, callback);
+    Account.findOneAndUpdate(query, acc, callback);
 }
 
 

@@ -8,6 +8,7 @@ var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var config = require('./config'); // get our config file
 var User   = require('./app/models/user'); // get our mongoose model
 var Account  = require('./app/models/accounts'); // accounts model
+var Transaction  = require('./app/models/transaction');
 var Service = require('./app/service/service') //service
 
 
@@ -155,9 +156,78 @@ app.use(function(req, res, next) {
 
 
 app.get('/info', function(req, res) {
-	res.send(req.decoded.id);
+
+	User.findById(req.decoded.id,function(err, user){
+		if(err){
+			res.send("Some error occured Please try after some time"+ err);
+		}
+		Account.findById(user.account,function(err, acc){
+			user.account = acc;
+			var info = {
+				username : user.username,
+				name: user. account.name,
+				accountNumber: user.account.accountnumber,
+				balance: user.account.ammount,
+				transaction: user.transaction
+			}
+			res.json(info);
+		})
+
+		
+	})
 });
 
+
+app.post('/transfer', function(req, res) {
+
+	var toAccount = req.body.account;
+	var ammontToTransfer = req.body.ammount;
+	User.findById(req.decoded.id,function(err, user){
+		if(err){
+			res.send("Some error occured Please try after some time"+ err);
+		}
+		Account.findById(user.account,function(err, fromacc){
+			user.account = fromacc;
+			var info = {
+				username : user.username,
+				name: user. account.name,
+				accountNumber: user.account.accountnumber,
+				balance: user.account.ammount,
+				transaction: user.account.transaction
+			}
+			if(ammontToTransfer > user.account.ammount){
+				res.json({message : "Insufficient Fund, You have only INR: "+user.account.ammount})
+			}
+			else{
+				Account.getAccountByAccNumber(toAccount,function(err, toAcc){
+					toAcc.ammount = toAcc.ammount + ammontToTransfer;
+
+					
+					
+					Account.updateAccount(toAcc.accountnumber, toAcc, function(err, returndata){
+						if(err){
+							res.send(err);
+						}
+						Tra
+						fromacc.ammount = fromacc.ammount - ammontToTransfer;
+						Account.update({accountnumber:fromacc.accountnumber}, { ammount: fromacc.ammount}, function(err, returndata2){
+							if(err){
+								res.send(err);
+							}
+							res.json({message:"Transfer done. Your current acc balance INR :"+ fromacc.ammount,
+							toAcc:toAcc,
+							frm:fromacc,
+					
+						});
+						})
+					} )
+				})
+			}
+		})
+
+		
+	})
+});
 // basic route (http://localhost:8080)
 app.get('/', function(req, res) {
 	res.send('Hello! The API is at http://localhost:' + port + '/api');

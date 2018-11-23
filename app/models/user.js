@@ -17,9 +17,6 @@ var userSchema = mongoose.Schema({
         ref:'Account'
     },
     
-    transaction:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
-    
-    beneficiary:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }],
 	
     status:{
         type:String,
@@ -38,7 +35,7 @@ var User = module.exports = mongoose.model('User',userSchema);
 // Get User by Id
 module.exports.getUserById =function (id,callback) {
     
-    User.findById(id, callback);
+    User.findById(id, callback).populate('account');
     
 }
 

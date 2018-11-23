@@ -18,7 +18,7 @@ var accountSchema = mongoose.Schema({
     transaction:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
     
     beneficiary:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }],
-    
+
     createdAt:{
         type:Date,
         default: Date.now
@@ -35,8 +35,10 @@ module.exports.addAccount = function (acc, callback) {
         
        name : acc.name,
        accountnumber : acc.accountnumber,
-       ammount : acc.ammount
-        }
+       ammount : acc.ammount,
+       transaction: acc.transaction
+       
+    }
     Account.create(add, callback);
 }
 

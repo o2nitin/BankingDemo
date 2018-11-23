@@ -243,9 +243,7 @@ app.post('/transfer', function(req, res) {
 									if(err){
 										res.send(err);
 									}
-									res.json({message:"Transfer done. Your current acc balance INR :"+ fromacc.ammount,
-									toAcc:toAcc,
-									frm:fromacc,
+									res.json({message:"Transfer done. Your current acc balance INR :"+ fromacc.ammount
 							
 								});
 								})

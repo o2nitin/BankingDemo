@@ -21,7 +21,7 @@ mongoose.connect(config.database); // connect to database
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback () {
-  console.log("h");
+  console.log("connected");
 });
 app.set('superSecret', config.secret); // secret variable
 
@@ -32,14 +32,26 @@ app.use(bodyParser.json());
 // use morgan to log requests to the console
 app.use(morgan('dev'));
 
-app.get('/setup', function(req, res) {
+app.post('/setup', function(req, res) {
+	var username = req.body.username;
+	var name = req.body.name;
+	var pass = req.body.password;
+	if(!req.body.username){
+		res.json({message:"username can't be blank"})
+	}
+	if(!req.body.name){
+		res.json({message:"Name can't be blank"})
+	}
+	if(!req.body.password){
+		res.json({message:"Password can't be blank"})
+	}
 
 	// create a sample user with genrated acc number
 	
     var acc = Service.genrateAccountNumber(100000);
     
     var account = {
-        name: 'Nitin Singh', 
+        name: name, 
         accountnumber : acc,
         ammount: 1000
     }
@@ -49,9 +61,9 @@ app.get('/setup', function(req, res) {
             res.send(err);
 		}
 		var nick = {
-			username: 'nitin', 
+			username: username, 
 			accountid: ac._id,
-			password: 'password',
+			password: pass,
 			status: 'active' 
 		};
 		User.addUser(nick,function(err, user){
@@ -60,13 +72,90 @@ app.get('/setup', function(req, res) {
 			}
 			res.json({
 				username:user.username,
-				message: "Resgtred Successfull"
+				message: "Registred Successfull"
 			});
 		})
         
         
     });
 	
+});
+
+app.post('/auth', function(req, res) {
+
+	// find the user
+	User.findOne({
+		username: req.body.username
+	}, function(err, user) {
+
+		if (err) throw err;
+
+		if (!user) {
+			res.json({ success: false, message: 'Authentication failed. User not found.' });
+		} else if (user) {
+
+			// check if password matches
+			if (user.password != req.body.password) {
+				res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+			} else {
+
+				// if user is found and password is right
+				// create a token
+				var payload = {
+					id: user._id	
+				}
+				var token = jwt.sign(payload, app.get('superSecret'), {
+					expiresIn: 86400 // expires in 24 hours
+				});
+
+				res.json({
+					success: true,
+					message: 'Use this token for acess other information',
+					token: token
+				});
+			}		
+
+		}
+
+	});
+});
+
+app.use(function(req, res, next) {
+
+	// check header or url parameters or post parameters for token
+	var token = req.body.token || req.param('token') || req.headers['x-access-token'];
+
+	// decode token
+	if (token) {
+
+		// verifies secret and checks exp
+		jwt.verify(token, app.get('superSecret'), function(err, decoded) {			
+			if (err) {
+				return res.json({ success: false, message: 'Failed to authenticate token.' });		
+			} else {
+				// if everything is good, save to request for use in other routes
+				req.decoded = decoded;	
+				next();
+			}
+		});
+
+	} else {
+
+		// if there is no token
+		// return an error
+		return res.status(403).send({ 
+			success: false, 
+			message: 'No token provided.'
+		});
+		
+	}
+	
+});
+
+
+
+app.get('/info', function(req, res) {
+	res.send(req.decoded.id);
 });
 
 // basic route (http://localhost:8080)

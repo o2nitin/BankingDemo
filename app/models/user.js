@@ -17,7 +17,9 @@ var userSchema = mongoose.Schema({
         ref:'Account'
     },
     
-	transaction:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+    transaction:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+    
+    beneficiary:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }],
 	
     status:{
         type:String,
@@ -40,6 +42,13 @@ module.exports.getUserById =function (id,callback) {
     
 }
 
+//find by username 
+module.exports.getUserByUsername = function (username, callback) {
+    
+    User.findOne({ username: username }, callback);
+    
+}
+
 // Add USER
 
 module.exports.addUser = function (user,callback) {
@@ -54,6 +63,17 @@ module.exports.addUser = function (user,callback) {
     User.create(add, callback);
 }
 
+//add beneficiary
+// module.exports.addBeneficiary = function (user,callback) {
+//     var query = {accountnumber: accNumber};
+//     var add = {
+//         beneficiary
+//         }
+//     User.findOneAndUpdate(query, acc, options, callback);
+// }
+
+   
+    
 
 
 

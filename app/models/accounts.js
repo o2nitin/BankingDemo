@@ -41,3 +41,20 @@ module.exports.getAccountById = function (id, callback) {
     Account.findById(id, callback);
     
 }
+
+//find by account number
+module.exports.getAccountByAccNumber = function (accNumber, callback) {
+    
+    Account.findOne({ accountnumber: accNumber }, callback);
+    
+}
+
+
+//find and update account
+module.exports.updateAccount = function (accNumber, acc, options, callback) {
+    var query = {accountnumber: accNumber};
+   
+    Account.findOneAndUpdate(query, acc, options, callback);
+}
+
+
